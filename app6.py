@@ -1,3 +1,4 @@
+import home
 # Simulador de Markup com funcionalidades completas
 import streamlit as st
 import pandas as pd
@@ -61,7 +62,9 @@ if 'custos_fixos' not in st.session_state:
     st.session_state['custos_fixos'] = []
 
 # MENU
-menu = st.sidebar.radio("Menu", ["Produtos", "Custos Variáveis", "Custos Fixos", "Relatório/Gráfico", "Salvar/Carregar"])
+menu = st.sidebar.radio("Navegar para:", ["Início", "Simulador", "Gráfico de Rentabilidade"])
+if menu == "Início":
+    home.exibir_pagina_inicial()
 
 if menu == "Produtos":
     st.subheader("Cadastro de Produtos")
