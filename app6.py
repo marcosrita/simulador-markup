@@ -1,9 +1,7 @@
+import streamlit as st  # Import obrigatório antes de qualquer comando Streamlit
 st.set_page_config(page_title="Simulador de Markup - Marcos Rita + IA", layout="wide")
-st.title("Simulador de Markup e Rentabilidade")
 
 import home
-# Simulador de Markup com funcionalidades completas
-import streamlit as st
 import pandas as pd
 import plotly.express as px
 from fpdf import FPDF
@@ -11,6 +9,7 @@ from datetime import datetime
 import os
 import base64
 
+st.title("Simulador de Markup e Rentabilidade")
 
 # Função para gerar relatório PDF
 def gerar_pdf(df_produtos, df_cv, df_cf, lucro_total, markup_medio):
@@ -63,11 +62,15 @@ if 'custos_fixos' not in st.session_state:
     st.session_state['custos_fixos'] = []
 
 # MENU
-menu = st.sidebar.radio("Navegar para:", ["Início", "Simulador", "Gráfico de Rentabilidade"])
+menu = st.sidebar.radio("Navegar para:", ["Início", "Simulador", "Gráfico de Rentabilidade", "Produtos", "Custos Variáveis", "Custos Fixos", "Relatório/Gráfico", "Salvar/Carregar"])
+
 if menu == "Início":
     home.exibir_pagina_inicial()
 
-if menu == "Produtos":
+elif menu == "Simulador":
+    st.subheader("Em desenvolvimento...")
+
+elif menu == "Produtos":
     st.subheader("Cadastro de Produtos")
     with st.form("form_produto"):
         nome = st.text_input("Nome do Produto")
@@ -78,7 +81,13 @@ if menu == "Produtos":
         if submit:
             lucro = preco - custo
             markup = preco / custo if custo else 0
-            st.session_state['produtos'].append({"Produto": nome, "Preco Venda": preco, "Custo": custo, "Lucro": lucro, "Markup": markup})
+            st.session_state['produtos'].append({
+                "Produto": nome, 
+                "Preco Venda": preco, 
+                "Custo": custo, 
+                "Lucro": lucro, 
+                "Markup": markup
+            })
             st.success("Produto adicionado!")
 
     if st.session_state['produtos']:
