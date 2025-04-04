@@ -5,7 +5,7 @@ from fpdf import FPDF
 from datetime import datetime
 import os
 
-st.set_page_config(page_title="Simulador de Markup - Marcos Rita + IA", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Simulador de Markup - Marcos Rita +IA", layout="wide", initial_sidebar_state="expanded")
 st.title("Simulador de Markup e Rentabilidade")
 
 # Menu lateral
