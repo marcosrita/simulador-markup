@@ -1,8 +1,6 @@
 import streamlit as st
 
-
 st.set_page_config(page_title="Simulador de Markup - Marcos Rita + IA", layout="wide")
-
 
 import home
 import pandas as pd
@@ -13,7 +11,6 @@ import os
 import base64
 
 st.title("Simulador de Markup e Rentabilidade")
-
 
 def gerar_pdf(df_produtos, df_cv, df_cf, lucro_total, markup_medio):
     pdf = FPDF()
@@ -56,7 +53,7 @@ def gerar_pdf(df_produtos, df_cv, df_cf, lucro_total, markup_medio):
     pdf.output(caminho)
     return caminho
 
-
+# Inicializar session state
 if 'produtos' not in st.session_state:
     st.session_state['produtos'] = []
 if 'custos_variaveis' not in st.session_state:
@@ -64,15 +61,34 @@ if 'custos_variaveis' not in st.session_state:
 if 'custos_fixos' not in st.session_state:
     st.session_state['custos_fixos'] = []
 
-
-menu = st.sidebar.radio("Navegar para:", ["Início", "Simulador", "Gráfico de Rentabilidade", "Produtos", "Custos Variáveis", "Custos Fixos", "Relatório/Gráfico", "Salvar/Carregar"])
+# NOVA ORDEM DO MENU
+menu = st.sidebar.radio("Navegar para:", [
+    "Início",
+    "Produtos",
+    "Custos Variáveis",
+    "Custos Fixos",
+    "Simulador",
+    "Gráfico de Rentabilidade",
+    "Relatório/Gráfico",
+    "Salvar/Carregar"
+])
 
 if menu == "Início":
     home.exibir_pagina_inicial()
 
 elif menu == "Simulador":
     st.subheader("Simulador de Markup e Rentabilidade")
-  
+    if not st.session_state['produtos'] or not st.session_state['custos_variaveis'] or not st.session_state['custos_fixos']:
+        st.info("📌 Cadastre os produtos, custos variáveis e custos fixos para simular o markup e a rentabilidade.")
+    else:
+        st.success("Tudo pronto para simular! Explore os gráficos no menu ao lado.")
+
+elif menu == "Gráfico de Rentabilidade":
+    st.subheader("Gráfico de Rentabilidade")
+    if not st.session_state['produtos']:
+        st.info("📌 Cadastre produtos, custos variáveis e fixos antes de gerar os gráficos.")
+    else:
+        st.success("Pronto para visualizar seus dados!")
 
 elif menu == "Produtos":
     st.subheader("Cadastro de Produtos")
