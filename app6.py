@@ -11,46 +11,26 @@ st.title("Simulador de Markup e Rentabilidade")
 # Menu lateral
 menu = st.sidebar.radio("Navegar para:", ["Simulador", "Gráfico de Rentabilidade"])
 
-# Funções auxiliares para salvar e carregar CSV
-
-def salvar_csv(df, nome_arquivo):
-    df.to_csv(nome_arquivo, index=False)
-    with open(nome_arquivo, "rb") as file:
-        st.download_button(
-            label="📥 Baixar dados como CSV",
-            data=file,
-            file_name=nome_arquivo,
-            mime="text/csv"
-        )
-
-def carregar_csv(uploaded_file):
-    return pd.read_csv(uploaded_file) if uploaded_file is not None else pd.DataFrame()
-
 if menu == "Simulador":
     st.markdown("## Cadastro de Produtos")
+    st.markdown("### Carregar projeto salvo (.csv)")
+    uploaded_file = st.file_uploader("Arraste e solte o arquivo aqui", type=["csv"], help="Limite: 200MB por arquivo • CSV")
+    
+    num_produtos = st.number_input("Quantos produtos deseja cadastrar?", min_value=1, value=3)
 
-    uploaded_file = st.file_uploader("🔄 Carregar projeto salvo (.csv)", type="csv")
-    df = carregar_csv(uploaded_file)
+    produtos = []
+    for i in range(int(num_produtos)):
+        with st.expander(f"Produto {i+1}"):
+            nome = st.text_input(f"Nome do Produto {i+1}", key=f"nome_{i}")
+            preco_venda = st.number_input(f"Preço de Venda (R$) - Produto {i+1}", key=f"venda_{i}")
+            custo = st.number_input(f"Custo (R$) - Produto {i+1}", key=f"custo_{i}")
+            produtos.append({"Produto": nome, "Preço de Venda": preco_venda, "Custo": custo})
 
-    if df.empty:
-        num_produtos = st.number_input("Quantos produtos deseja cadastrar?", min_value=1, value=3)
-
-        produtos = []
-        for i in range(int(num_produtos)):
-            with st.expander(f"Produto {i+1}"):
-                nome = st.text_input(f"Nome do Produto {i+1}", key=f"nome_{i}")
-                preco_venda = st.number_input(f"Preço de Venda (R$) - Produto {i+1}", key=f"venda_{i}")
-                custo = st.number_input(f"Custo (R$) - Produto {i+1}", key=f"custo_{i}")
-                produtos.append({"Produto": nome, "Preço de Venda": preco_venda, "Custo": custo})
-
-        df = pd.DataFrame(produtos)
+    df = pd.DataFrame(produtos)
 
     if not df.empty:
         st.markdown("### Tabela de Produtos")
         st.dataframe(df, use_container_width=True)
-
-        # Botão para salvar CSV
-        salvar_csv(df, "projeto_simulador.csv")
 
 elif menu == "Gráfico de Rentabilidade":
     st.markdown("## Cadastro de Produtos para Gráfico")
