@@ -21,7 +21,7 @@ components.html(f"""
 """, height=0)
 
 # Página de apresentação
-st.image("images/banner.jpg", use_container_width=True)
+st.image("banner.jpg", use_container_width=True)
 
 st.markdown("""
 # Bem-vindo ao Simulador de Markup e Rentabilidade 🧠💰
