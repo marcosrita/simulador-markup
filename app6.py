@@ -1,5 +1,8 @@
-import streamlit as st  # Import obrigatório antes de qualquer comando Streamlit
+import streamlit as st
+
+
 st.set_page_config(page_title="Simulador de Markup - Marcos Rita + IA", layout="wide")
+
 
 import home
 import pandas as pd
@@ -11,7 +14,7 @@ import base64
 
 st.title("Simulador de Markup e Rentabilidade")
 
-# Função para gerar relatório PDF
+
 def gerar_pdf(df_produtos, df_cv, df_cf, lucro_total, markup_medio):
     pdf = FPDF()
     pdf.add_page()
@@ -53,7 +56,7 @@ def gerar_pdf(df_produtos, df_cv, df_cf, lucro_total, markup_medio):
     pdf.output(caminho)
     return caminho
 
-# Inicialização de dados
+
 if 'produtos' not in st.session_state:
     st.session_state['produtos'] = []
 if 'custos_variaveis' not in st.session_state:
@@ -61,14 +64,15 @@ if 'custos_variaveis' not in st.session_state:
 if 'custos_fixos' not in st.session_state:
     st.session_state['custos_fixos'] = []
 
-# MENU
+
 menu = st.sidebar.radio("Navegar para:", ["Início", "Simulador", "Gráfico de Rentabilidade", "Produtos", "Custos Variáveis", "Custos Fixos", "Relatório/Gráfico", "Salvar/Carregar"])
 
 if menu == "Início":
     home.exibir_pagina_inicial()
 
 elif menu == "Simulador":
-    st.subheader("Em desenvolvimento...")
+    st.subheader("Simulador de Markup e Rentabilidade")
+  
 
 elif menu == "Produtos":
     st.subheader("Cadastro de Produtos")
@@ -81,13 +85,7 @@ elif menu == "Produtos":
         if submit:
             lucro = preco - custo
             markup = preco / custo if custo else 0
-            st.session_state['produtos'].append({
-                "Produto": nome, 
-                "Preco Venda": preco, 
-                "Custo": custo, 
-                "Lucro": lucro, 
-                "Markup": markup
-            })
+            st.session_state['produtos'].append({"Produto": nome, "Preco Venda": preco, "Custo": custo, "Lucro": lucro, "Markup": markup})
             st.success("Produto adicionado!")
 
     if st.session_state['produtos']:
@@ -143,7 +141,7 @@ elif menu == "Relatório/Gráfico":
             caminho_pdf = gerar_pdf(df_produtos, df_cv, df_cf, lucro_total, markup_medio)
             with open(caminho_pdf, "rb") as f:
                 b64 = base64.b64encode(f.read()).decode()
-                href = f'<a href="data:application/octet-stream;base64,{b64}" download="relatorio_simulador.pdf">Baixar PDF</a>'
+                href = f'<a href="data:application/octet-stream;base64,{b64}" download="relatorio_simulador.pdf">📥 Baixar PDF</a>'
                 st.markdown(href, unsafe_allow_html=True)
 
 elif menu == "Salvar/Carregar":
