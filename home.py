@@ -1,11 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(
-    page_title="Simulador de Markup e Rentabilidade - Marcos Rita + IA",
-    page_icon="📊",
-    layout="wide"
-)
 
 # Meta tags para compartilhamento (HTML customizado)
 meta_tags = """
