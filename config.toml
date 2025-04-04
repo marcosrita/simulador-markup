@@ -1,0 +1,7 @@
+[theme]
+base="dark"
+primaryColor="#1E3A8A"                # Azul escuro
+backgroundColor="#0F172A"             # Fundo principal
+secondaryBackgroundColor="#1E293B"    # Cards e inputs
+textColor="#F1F5F9"                   # Cor da fonte
+font="sans serif"
