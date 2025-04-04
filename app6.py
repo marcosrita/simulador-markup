@@ -12,7 +12,7 @@ import base64
 
 st.title("Simulador de Markup e Rentabilidade")
 
-def gerar_pdf(df_produtos, df_cv, df_cf, lucro_total, markup_medio):
+def gerar_pdf(df_produtos, df_cv, df_cf, lucro_total, markup_medio, meta_lucro):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", "B", 16)
@@ -24,6 +24,14 @@ def gerar_pdf(df_produtos, df_cv, df_cf, lucro_total, markup_medio):
     data_atual = datetime.now().strftime('%d/%m/%Y %H:%M')
     pdf.set_font("Arial", size=10)
     pdf.cell(200, 10, f"Data do relatório: {data_atual}", ln=True)
+
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(200, 10, "Meta de Lucro", ln=True)
+    pdf.set_font("Arial", size=10)
+    pdf.cell(200, 8, f"Meta de Lucro: R${meta_lucro:.2f}", ln=True)
+    pdf.cell(200, 8, f"Lucro Total Estimado: R${lucro_total:.2f}", ln=True)
+    atingiu_meta = "Sim" if lucro_total >= meta_lucro else "Não"
+    pdf.cell(200, 8, f"Meta Atingida: {atingiu_meta}", ln=True)
 
     pdf.set_font("Arial", "B", 12)
     pdf.cell(200, 10, "Produtos", ln=True)
@@ -43,27 +51,16 @@ def gerar_pdf(df_produtos, df_cv, df_cf, lucro_total, markup_medio):
     for i, row in df_cf.iterrows():
         pdf.cell(200, 8, f"{row['Nome']}: R${row['Valor']:.2f}", ln=True)
 
-    pdf.set_font("Arial", "B", 12)
-    pdf.cell(200, 10, "Resumo Financeiro", ln=True)
-    pdf.set_font("Arial", size=10)
-    pdf.cell(200, 8, f"Lucro Total Estimado: R${lucro_total:.2f}", ln=True)
-    pdf.cell(200, 8, f"Markup Médio: {markup_medio:.2f}x", ln=True)
-
     caminho = os.path.join(os.getcwd(), "relatorio_simulador.pdf")
     pdf.output(caminho)
     return caminho
 
-# Inicializar session state
-if 'produtos' not in st.session_state:
-    st.session_state['produtos'] = []
-if 'custos_variaveis' not in st.session_state:
-    st.session_state['custos_variaveis'] = []
-if 'custos_fixos' not in st.session_state:
-    st.session_state['custos_fixos'] = []
+if 'meta_lucro' not in st.session_state:
+    st.session_state['meta_lucro'] = 0.0
 
-# NOVA ORDEM DO MENU
 menu = st.sidebar.radio("Navegar para:", [
     "Início",
+    "Meta de Lucro",
     "Produtos",
     "Custos Variáveis",
     "Custos Fixos",
@@ -73,68 +70,12 @@ menu = st.sidebar.radio("Navegar para:", [
     "Salvar/Carregar"
 ])
 
-if menu == "Início":
-    home.exibir_pagina_inicial()
-
-elif menu == "Simulador":
-    st.subheader("Simulador de Markup e Rentabilidade")
-    if not st.session_state['produtos'] or not st.session_state['custos_variaveis'] or not st.session_state['custos_fixos']:
-        st.info("📌 Cadastre os produtos, custos variáveis e custos fixos para simular o markup e a rentabilidade.")
-    else:
-        st.success("Tudo pronto para simular! Explore os gráficos no menu ao lado.")
-
-elif menu == "Gráfico de Rentabilidade":
-    st.subheader("Gráfico de Rentabilidade")
-    if not st.session_state['produtos']:
-        st.info("📌 Cadastre produtos, custos variáveis e fixos antes de gerar os gráficos.")
-    else:
-        st.success("Pronto para visualizar seus dados!")
-
-elif menu == "Produtos":
-    st.subheader("Cadastro de Produtos")
-    with st.form("form_produto"):
-        nome = st.text_input("Nome do Produto")
-        preco = st.number_input("Preço de Venda (R$)", min_value=0.0)
-        custo = st.number_input("Custo (R$)", min_value=0.0)
-        submit = st.form_submit_button("Adicionar Produto")
-
-        if submit:
-            lucro = preco - custo
-            markup = preco / custo if custo else 0
-            st.session_state['produtos'].append({"Produto": nome, "Preco Venda": preco, "Custo": custo, "Lucro": lucro, "Markup": markup})
-            st.success("Produto adicionado!")
-
-    if st.session_state['produtos']:
-        df_produtos = pd.DataFrame(st.session_state['produtos'])
-        st.dataframe(df_produtos)
-
-elif menu == "Custos Variáveis":
-    st.subheader("Custos Variáveis")
-    with st.form("form_cv"):
-        nome = st.text_input("Nome do Custo Variável")
-        valor = st.number_input("Valor (R$)", min_value=0.0)
-        add = st.form_submit_button("Adicionar")
-        if add:
-            st.session_state['custos_variaveis'].append({"Nome": nome, "Valor": valor})
-            st.success("Custo Variável adicionado!")
-
-    if st.session_state['custos_variaveis']:
-        df_cv = pd.DataFrame(st.session_state['custos_variaveis'])
-        st.dataframe(df_cv)
-
-elif menu == "Custos Fixos":
-    st.subheader("Custos Fixos")
-    with st.form("form_cf"):
-        nome = st.text_input("Nome do Custo Fixo")
-        valor = st.number_input("Valor (R$)", min_value=0.0)
-        add = st.form_submit_button("Adicionar")
-        if add:
-            st.session_state['custos_fixos'].append({"Nome": nome, "Valor": valor})
-            st.success("Custo Fixo adicionado!")
-
-    if st.session_state['custos_fixos']:
-        df_cf = pd.DataFrame(st.session_state['custos_fixos'])
-        st.dataframe(df_cf)
+if menu == "Meta de Lucro":
+    st.subheader("Definir Meta de Lucro")
+    meta_lucro = st.number_input("Defina a meta de lucro desejada (R$)", min_value=0.0, value=st.session_state['meta_lucro'])
+    if st.button("Salvar Meta"):
+        st.session_state['meta_lucro'] = meta_lucro
+        st.success(f"Meta de lucro definida: R${meta_lucro:.2f}")
 
 elif menu == "Relatório/Gráfico":
     st.subheader("Gráficos e PDF")
@@ -153,23 +94,16 @@ elif menu == "Relatório/Gráfico":
         fig2 = px.bar(df_produtos, x="Produto", y="Markup", text_auto=True)
         st.plotly_chart(fig2)
 
+        st.markdown(f"### Meta de Lucro: R${st.session_state['meta_lucro']:.2f}")
+        st.markdown(f"### Lucro Total Estimado: R${lucro_total:.2f}")
+        atingiu_meta = "✅ Meta Atingida!" if lucro_total >= st.session_state['meta_lucro'] else "❌ Meta Não Atingida"
+        st.markdown(f"## {atingiu_meta}")
+
         if st.button("📄 Gerar PDF"):
-            caminho_pdf = gerar_pdf(df_produtos, df_cv, df_cf, lucro_total, markup_medio)
+            caminho_pdf = gerar_pdf(df_produtos, df_cv, df_cf, lucro_total, markup_medio, st.session_state['meta_lucro'])
             with open(caminho_pdf, "rb") as f:
                 b64 = base64.b64encode(f.read()).decode()
                 href = f'<a href="data:application/octet-stream;base64,{b64}" download="relatorio_simulador.pdf">📥 Baixar PDF</a>'
                 st.markdown(href, unsafe_allow_html=True)
 
-elif menu == "Salvar/Carregar":
-    st.subheader("Salvar e Carregar Dados")
-
-    if st.button("Salvar Dados como CSV"):
-        df_produtos = pd.DataFrame(st.session_state['produtos'])
-        df_produtos.to_csv("dados_produtos.csv", index=False)
-        st.success("Arquivo CSV salvo como dados_produtos.csv")
-
-    arquivo = st.file_uploader("Carregar Arquivo CSV", type="csv")
-    if arquivo is not None:
-        df_carregado = pd.read_csv(arquivo)
-        st.session_state['produtos'] = df_carregado.to_dict(orient='records')
-        st.success("Arquivo carregado com sucesso!")
+st.sidebar.markdown("Versão: Marcos Rita + IA")
