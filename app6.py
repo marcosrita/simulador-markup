@@ -1,7 +1,4 @@
 import streamlit as st
-
-st.set_page_config(page_title="Simulador de Markup - Marcos Rita + IA", layout="wide")
-
 import home
 import pandas as pd
 import plotly.express as px
@@ -10,8 +7,17 @@ from datetime import datetime
 import os
 import base64
 
+st.set_page_config(page_title="Simulador de Markup - Marcos Rita + IA", layout="wide")
+
+# CSS para controlar visibilidade do menu conforme a largura da tela
 st.markdown("""
     <style>
+    @media (min-width: 768px) {
+        .menu-horizontal { display: none !important; }
+    }
+    @media (max-width: 767px) {
+        .menu-lateral { display: none !important; }
+    }
     .menu-container {
         display: flex;
         justify-content: center;
@@ -50,58 +56,21 @@ if 'custos_fixos' not in st.session_state:
 def selecionar_pagina(p):
     st.session_state['pagina'] = p
 
-# Menu no topo
-col1, col2 = st.columns([1, 10])
-with col1:
-    st.write("## ")
-with col2:
-    with st.container():
-        st.markdown("<div class='menu-container'>", unsafe_allow_html=True)
-        for nome in ["Início", "Produtos", "Custos Variáveis", "Custos Fixos", "Simulador", "Gráfico de Rentabilidade", "Relatório/Gráfico", "Salvar/Carregar"]:
-            if st.button(nome):
-                selecionar_pagina(nome)
-        st.markdown("</div>", unsafe_allow_html=True)
+# Menu lateral (desktop)
+with st.sidebar:
+    st.markdown("<div class='menu-lateral'>", unsafe_allow_html=True)
+    for nome in ["Início", "Produtos", "Custos Variáveis", "Custos Fixos", "Simulador", "Gráfico de Rentabilidade", "Relatório/Gráfico", "Salvar/Carregar"]:
+        if st.button(nome):
+            selecionar_pagina(nome)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-def gerar_pdf(df_produtos, df_cv, df_cf, lucro_total, markup_medio):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", "B", 16)
-    pdf.cell(200, 10, "Relatório de Rentabilidade", ln=True, align="C")
-    pdf.set_font("Arial", "I", 12)
-    pdf.cell(200, 10, "Marcos Rita + IA", ln=True, align="C")
-    pdf.ln(10)
-
-    data_atual = datetime.now().strftime('%d/%m/%Y %H:%M')
-    pdf.set_font("Arial", size=10)
-    pdf.cell(200, 10, f"Data do relatório: {data_atual}", ln=True)
-
-    pdf.set_font("Arial", "B", 12)
-    pdf.cell(200, 10, "Produtos", ln=True)
-    pdf.set_font("Arial", size=10)
-    for i, row in df_produtos.iterrows():
-        pdf.cell(200, 8, f"{row['Produto']}: Venda=R${row['Preco Venda']:.2f} | Custo=R${row['Custo']:.2f} | Lucro=R${row['Lucro']:.2f} | Markup={row['Markup']:.2f}x", ln=True)
-
-    pdf.set_font("Arial", "B", 12)
-    pdf.cell(200, 10, "Custos Variáveis", ln=True)
-    pdf.set_font("Arial", size=10)
-    for i, row in df_cv.iterrows():
-        pdf.cell(200, 8, f"{row['Nome']}: R${row['Valor']:.2f}", ln=True)
-
-    pdf.set_font("Arial", "B", 12)
-    pdf.cell(200, 10, "Custos Fixos", ln=True)
-    pdf.set_font("Arial", size=10)
-    for i, row in df_cf.iterrows():
-        pdf.cell(200, 8, f"{row['Nome']}: R${row['Valor']:.2f}", ln=True)
-
-    pdf.set_font("Arial", "B", 12)
-    pdf.cell(200, 10, "Resumo Financeiro", ln=True)
-    pdf.set_font("Arial", size=10)
-    pdf.cell(200, 8, f"Lucro Total Estimado: R${lucro_total:.2f}", ln=True)
-    pdf.cell(200, 8, f"Markup Médio: {markup_medio:.2f}x", ln=True)
-
-    caminho = os.path.join(os.getcwd(), "relatorio_simulador.pdf")
-    pdf.output(caminho)
-    return caminho
+# Menu topo (mobile)
+st.markdown("<div class='menu-horizontal'>", unsafe_allow_html=True)
+st.markdown("<div class='menu-container'>", unsafe_allow_html=True)
+for nome in ["Início", "Produtos", "Custos Variáveis", "Custos Fixos", "Simulador", "Gráfico de Rentabilidade", "Relatório/Gráfico", "Salvar/Carregar"]:
+    if st.button(nome):
+        selecionar_pagina(nome)
+st.markdown("</div></div>", unsafe_allow_html=True)
 
 pagina = st.session_state['pagina']
 
@@ -113,7 +82,7 @@ elif pagina == "Simulador":
     if not st.session_state['produtos'] or not st.session_state['custos_variaveis'] or not st.session_state['custos_fixos']:
         st.info("📌 Cadastre os produtos, custos variáveis e custos fixos para simular o markup e a rentabilidade.")
     else:
-        st.success("Tudo pronto para simular! Explore os gráficos no menu acima.")
+        st.success("Tudo pronto para simular! Explore os gráficos no menu acima ou lateral.")
 
 elif pagina == "Gráfico de Rentabilidade":
     st.subheader("Gráfico de Rentabilidade")
@@ -204,3 +173,44 @@ elif pagina == "Salvar/Carregar":
         df_carregado = pd.read_csv(arquivo)
         st.session_state['produtos'] = df_carregado.to_dict(orient='records')
         st.success("Arquivo carregado com sucesso!")
+
+def gerar_pdf(df_produtos, df_cv, df_cf, lucro_total, markup_medio):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", "B", 16)
+    pdf.cell(200, 10, "Relatório de Rentabilidade", ln=True, align="C")
+    pdf.set_font("Arial", "I", 12)
+    pdf.cell(200, 10, "Marcos Rita + IA", ln=True, align="C")
+    pdf.ln(10)
+
+    data_atual = datetime.now().strftime('%d/%m/%Y %H:%M')
+    pdf.set_font("Arial", size=10)
+    pdf.cell(200, 10, f"Data do relatório: {data_atual}", ln=True)
+
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(200, 10, "Produtos", ln=True)
+    pdf.set_font("Arial", size=10)
+    for i, row in df_produtos.iterrows():
+        pdf.cell(200, 8, f"{row['Produto']}: Venda=R${row['Preco Venda']:.2f} | Custo=R${row['Custo']:.2f} | Lucro=R${row['Lucro']:.2f} | Markup={row['Markup']:.2f}x", ln=True)
+
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(200, 10, "Custos Variáveis", ln=True)
+    pdf.set_font("Arial", size=10)
+    for i, row in df_cv.iterrows():
+        pdf.cell(200, 8, f"{row['Nome']}: R${row['Valor']:.2f}", ln=True)
+
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(200, 10, "Custos Fixos", ln=True)
+    pdf.set_font("Arial", size=10)
+    for i, row in df_cf.iterrows():
+        pdf.cell(200, 8, f"{row['Nome']}: R${row['Valor']:.2f}", ln=True)
+
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(200, 10, "Resumo Financeiro", ln=True)
+    pdf.set_font("Arial", size=10)
+    pdf.cell(200, 8, f"Lucro Total Estimado: R${lucro_total:.2f}", ln=True)
+    pdf.cell(200, 8, f"Markup Médio: {markup_medio:.2f}x", ln=True)
+
+    caminho = os.path.join(os.getcwd(), "relatorio_simulador.pdf")
+    pdf.output(caminho)
+    return caminho
