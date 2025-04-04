@@ -10,7 +10,57 @@ from datetime import datetime
 import os
 import base64
 
+st.markdown("""
+    <style>
+    .menu-container {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+    .menu-container button {
+        background-color: #0f4c75;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    .menu-container button:hover {
+        background-color: #3282b8;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 st.title("Simulador de Markup e Rentabilidade")
+
+# Inicializar session state
+if 'pagina' not in st.session_state:
+    st.session_state['pagina'] = "Início"
+if 'produtos' not in st.session_state:
+    st.session_state['produtos'] = []
+if 'custos_variaveis' not in st.session_state:
+    st.session_state['custos_variaveis'] = []
+if 'custos_fixos' not in st.session_state:
+    st.session_state['custos_fixos'] = []
+
+def selecionar_pagina(p):
+    st.session_state['pagina'] = p
+
+# Menu no topo
+col1, col2 = st.columns([1, 10])
+with col1:
+    st.write("## ")
+with col2:
+    with st.container():
+        st.markdown("<div class='menu-container'>", unsafe_allow_html=True)
+        for nome in ["Início", "Produtos", "Custos Variáveis", "Custos Fixos", "Simulador", "Gráfico de Rentabilidade", "Relatório/Gráfico", "Salvar/Carregar"]:
+            if st.button(nome):
+                selecionar_pagina(nome)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 def gerar_pdf(df_produtos, df_cv, df_cf, lucro_total, markup_medio):
     pdf = FPDF()
@@ -53,51 +103,32 @@ def gerar_pdf(df_produtos, df_cv, df_cf, lucro_total, markup_medio):
     pdf.output(caminho)
     return caminho
 
-# Inicializar session state
-if 'produtos' not in st.session_state:
-    st.session_state['produtos'] = []
-if 'custos_variaveis' not in st.session_state:
-    st.session_state['custos_variaveis'] = []
-if 'custos_fixos' not in st.session_state:
-    st.session_state['custos_fixos'] = []
+pagina = st.session_state['pagina']
 
-# NOVA ORDEM DO MENU
-menu = st.sidebar.radio("Navegar para:", [
-    "Início",
-    "Produtos",
-    "Custos Variáveis",
-    "Custos Fixos",
-    "Simulador",
-    "Gráfico de Rentabilidade",
-    "Relatório/Gráfico",
-    "Salvar/Carregar"
-])
-
-if menu == "Início":
+if pagina == "Início":
     home.exibir_pagina_inicial()
 
-elif menu == "Simulador":
+elif pagina == "Simulador":
     st.subheader("Simulador de Markup e Rentabilidade")
     if not st.session_state['produtos'] or not st.session_state['custos_variaveis'] or not st.session_state['custos_fixos']:
         st.info("📌 Cadastre os produtos, custos variáveis e custos fixos para simular o markup e a rentabilidade.")
     else:
-        st.success("Tudo pronto para simular! Explore os gráficos no menu ao lado.")
+        st.success("Tudo pronto para simular! Explore os gráficos no menu acima.")
 
-elif menu == "Gráfico de Rentabilidade":
+elif pagina == "Gráfico de Rentabilidade":
     st.subheader("Gráfico de Rentabilidade")
     if not st.session_state['produtos']:
         st.info("📌 Cadastre produtos, custos variáveis e fixos antes de gerar os gráficos.")
     else:
         st.success("Pronto para visualizar seus dados!")
 
-elif menu == "Produtos":
+elif pagina == "Produtos":
     st.subheader("Cadastro de Produtos")
     with st.form("form_produto"):
         nome = st.text_input("Nome do Produto")
         preco = st.number_input("Preço de Venda (R$)", min_value=0.0)
         custo = st.number_input("Custo (R$)", min_value=0.0)
         submit = st.form_submit_button("Adicionar Produto")
-
         if submit:
             lucro = preco - custo
             markup = preco / custo if custo else 0
@@ -108,7 +139,7 @@ elif menu == "Produtos":
         df_produtos = pd.DataFrame(st.session_state['produtos'])
         st.dataframe(df_produtos)
 
-elif menu == "Custos Variáveis":
+elif pagina == "Custos Variáveis":
     st.subheader("Custos Variáveis")
     with st.form("form_cv"):
         nome = st.text_input("Nome do Custo Variável")
@@ -122,7 +153,7 @@ elif menu == "Custos Variáveis":
         df_cv = pd.DataFrame(st.session_state['custos_variaveis'])
         st.dataframe(df_cv)
 
-elif menu == "Custos Fixos":
+elif pagina == "Custos Fixos":
     st.subheader("Custos Fixos")
     with st.form("form_cf"):
         nome = st.text_input("Nome do Custo Fixo")
@@ -136,7 +167,7 @@ elif menu == "Custos Fixos":
         df_cf = pd.DataFrame(st.session_state['custos_fixos'])
         st.dataframe(df_cf)
 
-elif menu == "Relatório/Gráfico":
+elif pagina == "Relatório/Gráfico":
     st.subheader("Gráficos e PDF")
     if st.session_state['produtos']:
         df_produtos = pd.DataFrame(st.session_state['produtos'])
@@ -160,7 +191,7 @@ elif menu == "Relatório/Gráfico":
                 href = f'<a href="data:application/octet-stream;base64,{b64}" download="relatorio_simulador.pdf">📥 Baixar PDF</a>'
                 st.markdown(href, unsafe_allow_html=True)
 
-elif menu == "Salvar/Carregar":
+elif pagina == "Salvar/Carregar":
     st.subheader("Salvar e Carregar Dados")
 
     if st.button("Salvar Dados como CSV"):
