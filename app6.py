@@ -1,66 +1,123 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import base64
+from fpdf import FPDF
+from datetime import datetime
+import os
 
-def salvar_csv(df, filename="dados.csv"):
-    csv = df.to_csv(index=False, sep=';')
-    b64 = base64.b64encode(csv.encode()).decode()
-    href = f'<a href="data:file/csv;base64,{b64}" download="{filename}">📥 Baixar CSV</a>'
-    return href
+st.set_page_config(page_title="Simulador de Markup - Marcos Rita + IA", layout="wide", initial_sidebar_state="expanded")
+st.title("Simulador de Markup e Rentabilidade")
 
-def carregar_csv(uploaded_file):
-    return pd.read_csv(uploaded_file, sep=';')
+menu = st.sidebar.radio("Navegar para:", ["Simulador", "Gráfico de Rentabilidade", "Custos e Relatório PDF"])
 
-st.set_page_config(page_title="Simulador de Markup", layout="wide")
-st.title("📊 Simulador de Markup e Lucro")
+if menu == "Simulador":
+    st.markdown("## Cadastro de Produtos")
+    num_produtos = st.number_input("Quantos produtos deseja cadastrar?", min_value=1, value=3)
 
-# Carregar arquivo CSV
-st.subheader("Carregar dados salvos")
-uploaded_file = st.file_uploader("Arraste e solte o arquivo aqui", type=["csv"])
+    produtos = []
+    for i in range(int(num_produtos)):
+        with st.expander(f"Produto {i+1}"):
+            nome = st.text_input(f"Nome do Produto {i+1}", key=f"nome_{i}")
+            preco_venda = st.number_input(f"Preço de Venda (R$) - Produto {i+1}", key=f"venda_{i}")
+            custo = st.number_input(f"Custo (R$) - Produto {i+1}", key=f"custo_{i}")
+            lucro = preco_venda - custo
+            markup = preco_venda / custo if custo else 0
+            produtos.append({"Produto": nome, "Preco Venda": preco_venda, "Custo": custo, "Lucro": lucro, "Markup": markup})
 
-df = pd.DataFrame(columns=["Produto", "Preço de Venda", "Custo Variável", "Custo Fixo", "Lucro"])
+    df = pd.DataFrame(produtos)
 
-if uploaded_file is not None:
-    df = carregar_csv(uploaded_file)
-    st.success("Arquivo carregado com sucesso!")
+    if not df.empty:
+        st.markdown("### Tabela de Produtos")
+        st.dataframe(df, use_container_width=True)
 
-# Cadastro de produtos
-st.subheader("Cadastro de Produtos")
-col1, col2, col3, col4 = st.columns(4)
-with col1:
-    produto = st.text_input("Produto")
-with col2:
-    preco_venda = st.number_input("Preço de Venda", min_value=0.0, format="%.2f")
-with col3:
-    custo_variavel = st.number_input("Custo Variável", min_value=0.0, format="%.2f")
-with col4:
-    custo_fixo = st.number_input("Custo Fixo", min_value=0.0, format="%.2f")
+if menu == "Gráfico de Rentabilidade":
+    st.markdown("## Gráfico de Rentabilidade")
+    if 'df' in locals() and not df.empty:
+        st.markdown("## Gráfico de Lucro por Produto")
+        fig = px.bar(df, x="Produto", y="Lucro", color="Produto", text_auto=True)
+        st.plotly_chart(fig, use_container_width=True)
 
-if st.button("Adicionar Produto"):
-    lucro = preco_venda - (custo_variavel + custo_fixo)
-    novo_dado = pd.DataFrame([[produto, preco_venda, custo_variavel, custo_fixo, lucro]],
-                              columns=["Produto", "Preço de Venda", "Custo Variável", "Custo Fixo", "Lucro"])
-    df = pd.concat([df, novo_dado], ignore_index=True)
-    st.experimental_rerun()
+        st.markdown("## Gráfico de Markup")
+        fig2 = px.bar(df, x="Produto", y="Markup", color="Produto", text_auto=True)
+        st.plotly_chart(fig2, use_container_width=True)
+    else:
+        st.warning("Cadastre os produtos primeiro na aba Simulador.")
 
-if not df.empty:
-    st.subheader("Produtos Cadastrados")
-    st.dataframe(df)
-    
-    # Gráfico de Rentabilidade
-    fig = px.bar(df, x="Produto", y="Lucro", title="Rentabilidade por Produto", color="Lucro", text_auto=True)
-    st.plotly_chart(fig)
-    
-    # Baixar CSV
-    st.markdown(salvar_csv(df), unsafe_allow_html=True)
-    
-    # Exportar para PDF
-    st.subheader("Gerar Relatório PDF")
-    if st.button("📄 Exportar PDF"):
-        import pdfkit
-        html = df.to_html()
-        pdfkit.from_string(html, "relatorio.pdf")
-        with open("relatorio.pdf", "rb") as f:
-            b64_pdf = base64.b64encode(f.read()).decode('utf-8')
-            st.markdown(f'<a href="data:application/pdf;base64,{b64_pdf}" download="relatorio.pdf">📥 Baixar PDF</a>', unsafe_allow_html=True)
+if menu == "Custos e Relatório PDF":
+    st.markdown("## Custos Variáveis")
+    num_var = st.number_input("Quantos custos variáveis?", min_value=1, value=3, key="var")
+    variaveis = []
+    for i in range(int(num_var)):
+        nome = st.text_input(f"Nome do Custo Variável {i+1}", key=f"cv_nome_{i}")
+        valor = st.number_input(f"Valor R$ - {nome}", key=f"cv_valor_{i}")
+        variaveis.append({"Nome": nome, "Valor": valor})
+    df_cv = pd.DataFrame(variaveis)
+
+    st.markdown("## Custos Fixos")
+    num_fix = st.number_input("Quantos custos fixos?", min_value=1, value=3, key="fix")
+    fixos = []
+    for i in range(int(num_fix)):
+        nome = st.text_input(f"Nome do Custo Fixo {i+1}", key=f"cf_nome_{i}")
+        valor = st.number_input(f"Valor R$ - {nome}", key=f"cf_valor_{i}")
+        fixos.append({"Nome": nome, "Valor": valor})
+    df_cf = pd.DataFrame(fixos)
+
+    if not df.empty:
+        lucro_total = df["Lucro"].sum()
+        markup_medio = df["Markup"].mean()
+
+        if st.button("Gerar Relatório PDF"):
+            def gerar_relatorio_pdf(df_produtos, df_custos_variaveis, df_custos_fixos, lucro_total, markup_medio):
+                pdf = FPDF()
+                pdf.set_auto_page_break(auto=True, margin=15)
+                pdf.add_page()
+                pdf.set_font("Arial", "B", 16)
+                pdf.cell(0, 10, "Relatório de Rentabilidade", ln=True, align="C")
+                pdf.set_font("Arial", "I", 12)
+                pdf.cell(0, 10, "Marcos Rita + IA", ln=True, align="C")
+                pdf.ln(10)
+                data_atual = datetime.now().strftime('%d/%m/%Y %H:%M')
+                pdf.set_font("Arial", "", 10)
+                pdf.cell(0, 10, f"Data do relatório: {data_atual}", ln=True)
+                pdf.set_font("Arial", "B", 12)
+                pdf.cell(0, 10, "Produtos", ln=True)
+                pdf.set_font("Arial", "B", 10)
+                pdf.cell(40, 8, "Nome", border=1)
+                pdf.cell(30, 8, "Venda", border=1)
+                pdf.cell(30, 8, "Custo", border=1)
+                pdf.cell(30, 8, "Markup", border=1)
+                pdf.cell(30, 8, "Lucro", border=1)
+                pdf.ln()
+                pdf.set_font("Arial", "", 10)
+                for _, row in df_produtos.iterrows():
+                    pdf.cell(40, 8, str(row["Produto"]), border=1)
+                    pdf.cell(30, 8, f'R${row["Preco Venda"]:.2f}', border=1)
+                    pdf.cell(30, 8, f'R${row["Custo"]:.2f}', border=1)
+                    pdf.cell(30, 8, f'{row["Markup"]:.2f}x', border=1)
+                    pdf.cell(30, 8, f'R${row["Lucro"]:.2f}', border=1)
+                    pdf.ln()
+                pdf.ln(5)
+                pdf.set_font("Arial", "B", 12)
+                pdf.cell(0, 10, "Custos Variáveis", ln=True)
+                pdf.set_font("Arial", "", 10)
+                for _, row in df_custos_variaveis.iterrows():
+                    pdf.cell(0, 8, f'{row["Nome"]}: R${row["Valor"]:.2f}', ln=True)
+                pdf.ln(5)
+                pdf.set_font("Arial", "B", 12)
+                pdf.cell(0, 10, "Custos Fixos", ln=True)
+                pdf.set_font("Arial", "", 10)
+                for _, row in df_custos_fixos.iterrows():
+                    pdf.cell(0, 8, f'{row["Nome"]}: R${row["Valor"]:.2f}', ln=True)
+                pdf.ln(5)
+                pdf.set_font("Arial", "B", 12)
+                pdf.cell(0, 10, "Resumo Financeiro", ln=True)
+                pdf.set_font("Arial", "", 10)
+                pdf.cell(0, 8, f"Lucro total estimado: R${lucro_total:.2f}", ln=True)
+                pdf.cell(0, 8, f"Markup médio: {markup_medio:.2f}x", ln=True)
+                caminho_pdf = os.path.join(os.getcwd(), "relatorio_simulador.pdf")
+                pdf.output(caminho_pdf)
+                return caminho_pdf
+
+            caminho = gerar_relatorio_pdf(df, df_cv, df_cf, lucro_total, markup_medio)
+            with open(caminho, "rb") as file:
+                st.download_button("📄 Baixar Relatório PDF", file, file_name="relatorio_simulador.pdf")
