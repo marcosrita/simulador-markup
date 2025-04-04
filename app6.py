@@ -1,3 +1,6 @@
+st.set_page_config(page_title="Simulador de Markup - Marcos Rita + IA", layout="wide")
+st.title("Simulador de Markup e Rentabilidade")
+
 import home
 # Simulador de Markup com funcionalidades completas
 import streamlit as st
@@ -8,8 +11,6 @@ from datetime import datetime
 import os
 import base64
 
-st.set_page_config(page_title="Simulador de Markup - Marcos Rita + IA", layout="wide")
-st.title("Simulador de Markup e Rentabilidade")
 
 # Função para gerar relatório PDF
 def gerar_pdf(df_produtos, df_cv, df_cf, lucro_total, markup_medio):
