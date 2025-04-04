@@ -1,38 +1,36 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-# Estilo customizado para menus responsivos
-st.markdown("""
-    <style>
-        @media (max-width: 768px) {
-            .mobile-hint {
-                display: block;
-            }
-            .desktop-hint {
-                display: none;
-            }
-        }
-        @media (min-width: 769px) {
-            .mobile-hint {
-                display: none;
-            }
-            .desktop-hint {
-                display: block;
-            }
-        }
-    </style>
-""", unsafe_allow_html=True)
-
 def exibir_pagina_inicial():
-    # Meta tags para compartilhamento (HTML customizado)
+    # CSS customizado
+    custom_css = """
+    <style>
+    /* Mostra o menu lateral automaticamente em telas largas */
+    @media (min-width: 768px) {
+        section[data-testid="stSidebar"] {
+            display: block !important;
+            visibility: visible !important;
+        }
+    }
+
+    /* Fecha o menu automaticamente após clicar no mobile */
+    @media (max-width: 767px) {
+        header[tabindex="0"] {
+            pointer-events: none;
+        }
+    }
+    </style>
+    """
+    
     meta_tags = """
     <meta property="og:title" content="Simulador de Markup e Rentabilidade - Marcos Rita + IA" />
     <meta property="og:description" content="Simule seus lucros com inteligência! Cadastre produtos, analise rentabilidade e gere relatórios com o poder da IA." />
-    <meta property="og:image" content="https://simulador-markup.streamlit.app/A_digital_graphic_design_image_represents_a_Brazil.png" />
+    <meta property="og:image" content="https://simulador-markup.streamlit.app/images/banner.png" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://simulador-markup.streamlit.app" />
     """
-    components.html(f"<head>{meta_tags}</head>", height=0)
+
+    components.html(f"<head>{meta_tags}{custom_css}</head>", height=0)
 
     st.image("banner.jpg", use_container_width=True)
 
@@ -49,8 +47,8 @@ def exibir_pagina_inicial():
     ✅ Salvar e carregar simulações em CSV  
     ✅ Tudo isso com um design bonito e intuitivo em azul claro e escuro!  
 
-    <p class="desktop-hint">👉 Use o <strong>menu lateral</strong> para acessar as funcionalidades.</p>
-    <p class="mobile-hint">👉 Use o <strong>menu acima</strong> para acessar as funcionalidades.</p>
+    🖥️ *Na versão desktop, use o menu lateral.*  
+    📱 *Na versão mobile, use o menu acima (☰).*  
 
     **Compartilhe com seus amigos e otimize sua gestão de negócios!**
-    """, unsafe_allow_html=True)
+    """)
