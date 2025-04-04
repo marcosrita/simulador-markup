@@ -21,7 +21,7 @@ components.html(f"""
 """, height=0)
 
 # Página de apresentação
-st.image("A_digital_graphic_design_image_represents_a_Brazil.png", use_column_width=True)
+st.image("A_digital_graphic_design_image_represents_a_Brazil.png", use_container_width=True)
 
 st.markdown("""
 # Bem-vindo ao Simulador de Markup e Rentabilidade 🧠💰
