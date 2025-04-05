@@ -59,9 +59,10 @@ def selecionar_pagina(p):
 # Menu lateral (desktop)
 with st.sidebar:
     st.markdown("<div class='menu-lateral'>", unsafe_allow_html=True)
-    for nome in ["Início", "Produtos", "Custos Variáveis", "Custos Fixos", "Simulador", "Gráfico de Rentabilidade", "Relatório/Gráfico", "Salvar/Carregar"]:
-        if st.button(nome):
-            selecionar_pagina(nome)
+   for i, nome in enumerate(["Início", "Produtos", "Custos Variáveis", "Custos Fixos", "Simulador", "Gráfico de Rentabilidade", "Relatório/Gráfico", "Salvar/Carregar"]):
+    if st.button(nome, key=f"menu_btn_{i}"):
+        selecionar_pagina(nome)
+
     st.markdown("</div>", unsafe_allow_html=True)
 
 # Menu topo (mobile)
