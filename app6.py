@@ -9,22 +9,21 @@ import base64
 
 st.set_page_config(page_title="Simulador de Markup - Marcos Rita + IA", layout="wide")
 
-# CSS personalizado com dark mode e controle de menus
+# CSS para Dark Mode com tons de azul escuro
 st.markdown("""
     <style>
     body {
-        background-color: #121212;
+        background-color: #0f1c2e;
         color: #f0f0f0;
     }
     .stApp {
-        background-color: #121212;
+        background-color: #0f1c2e;
         color: #f0f0f0;
     }
-    @media (min-width: 768px) {
-        .menu-horizontal { display: none !important; }
-    }
-    @media (max-width: 767px) {
-        .menu-lateral { display: none !important; }
+    .menu-lateral, .menu-horizontal {
+        background-color: #1b2a41;
+        border-radius: 8px;
+        padding: 10px;
     }
     .menu-container {
         display: flex;
@@ -33,9 +32,9 @@ st.markdown("""
         margin-bottom: 2rem;
         flex-wrap: wrap;
     }
-    .menu-container button {
-        background-color: #1f4068;
-        color: white;
+    .menu-container button, .sidebar-content button {
+        background-color: #1b2a41 !important;
+        color: #f0f0f0 !important;
         border: none;
         padding: 10px 20px;
         font-size: 16px;
@@ -43,14 +42,21 @@ st.markdown("""
         cursor: pointer;
         transition: 0.3s;
     }
-    .menu-container button:hover {
-        background-color: #3282b8;
+    .menu-container button:hover, .sidebar-content button:hover {
+        background-color: #3282b8 !important;
+    }
+    @media (min-width: 768px) {
+        .menu-horizontal { display: none !important; }
+    }
+    @media (max-width: 767px) {
+        .menu-lateral { display: none !important; }
     }
     </style>
 """, unsafe_allow_html=True)
 
 st.title("Simulador de Markup e Rentabilidade")
 
+# Inicializar session state
 if 'pagina' not in st.session_state:
     st.session_state['pagina'] = "Início"
 if 'produtos' not in st.session_state:
@@ -76,7 +82,7 @@ with st.sidebar:
             selecionar_pagina(nome)
     st.markdown("</div>", unsafe_allow_html=True)
 
-# Menu horizontal (mobile)
+# Menu topo (mobile)
 st.markdown("<div class='menu-horizontal'>", unsafe_allow_html=True)
 st.markdown("<div class='menu-container'>", unsafe_allow_html=True)
 for i, nome in enumerate(opcoes_menu):
@@ -84,6 +90,7 @@ for i, nome in enumerate(opcoes_menu):
         selecionar_pagina(nome)
 st.markdown("</div></div>", unsafe_allow_html=True)
 
+# Página atual
 pagina = st.session_state['pagina']
 
 if pagina == "Início":
