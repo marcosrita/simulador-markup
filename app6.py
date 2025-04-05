@@ -9,6 +9,36 @@ import base64
 
 st.set_page_config(page_title="Simulador de Markup - Marcos Rita + IA", layout="wide")
 
+# Dark mode
+st.markdown("""
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #ffffff;
+        }
+        .stApp {
+            background-color: #1e1e1e;
+            color: white;
+        }
+        .menu-container button {
+            background-color: #0f4c75;
+            color: white;
+        }
+        .menu-container button:hover {
+            background-color: #3282b8;
+        }
+        .css-18e3th9 {
+            background-color: #1e1e1e;
+        }
+        .css-1d391kg {
+            background-color: #1e1e1e;
+        }
+        .css-1v0mbdj p, .css-1v0mbdj h1, .css-1v0mbdj h2, .css-1v0mbdj h3, .css-1v0mbdj h4, .css-1v0mbdj h5, .css-1v0mbdj h6 {
+            color: white !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 # CSS para controlar visibilidade do menu conforme a largura da tela
 st.markdown("""
     <style>
@@ -86,14 +116,14 @@ if pagina == "Início":
 elif pagina == "Simulador":
     st.subheader("Simulador de Markup e Rentabilidade")
     if not st.session_state['produtos'] or not st.session_state['custos_variaveis'] or not st.session_state['custos_fixos']:
-        st.info("\U0001F4CC Cadastre os produtos, custos variáveis e custos fixos para simular o markup e a rentabilidade.")
+        st.info("📌 Cadastre os produtos, custos variáveis e custos fixos para simular o markup e a rentabilidade.")
     else:
         st.success("Tudo pronto para simular! Explore os gráficos no menu acima ou lateral.")
 
 elif pagina == "Gráfico de Rentabilidade":
     st.subheader("Gráfico de Rentabilidade")
     if not st.session_state['produtos']:
-        st.info("\U0001F4CC Cadastre produtos, custos variáveis e fixos antes de gerar os gráficos.")
+        st.info("📌 Cadastre produtos, custos variáveis e fixos antes de gerar os gráficos.")
     else:
         st.success("Pronto para visualizar seus dados!")
 
@@ -159,11 +189,11 @@ elif pagina == "Relatório/Gráfico":
         fig2 = px.bar(df_produtos, x="Produto", y="Markup", text_auto=True)
         st.plotly_chart(fig2)
 
-        if st.button("\U0001F4C4 Gerar PDF"):
+        if st.button("📄 Gerar PDF"):
             caminho_pdf = gerar_pdf(df_produtos, df_cv, df_cf, lucro_total, markup_medio)
             with open(caminho_pdf, "rb") as f:
                 b64 = base64.b64encode(f.read()).decode()
-                href = f'<a href="data:application/octet-stream;base64,{b64}" download="relatorio_simulador.pdf">\U0001F4C5 Baixar PDF</a>'
+                href = f'<a href="data:application/octet-stream;base64,{b64}" download="relatorio_simulador.pdf">📥 Baixar PDF</a>'
                 st.markdown(href, unsafe_allow_html=True)
 
 elif pagina == "Salvar/Carregar":
