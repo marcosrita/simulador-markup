@@ -56,23 +56,28 @@ if 'custos_fixos' not in st.session_state:
 def selecionar_pagina(p):
     st.session_state['pagina'] = p
 
+opcoes_menu = [
+    "Início", "Produtos", "Custos Variáveis", "Custos Fixos",
+    "Simulador", "Gráfico de Rentabilidade", "Relatório/Gráfico", "Salvar/Carregar"
+]
+
 # Menu lateral (desktop)
 with st.sidebar:
     st.markdown("<div class='menu-lateral'>", unsafe_allow_html=True)
-   for i, nome in enumerate(["Início", "Produtos", "Custos Variáveis", "Custos Fixos", "Simulador", "Gráfico de Rentabilidade", "Relatório/Gráfico", "Salvar/Carregar"]):
-    if st.button(nome, key=f"menu_btn_{i}"):
-        selecionar_pagina(nome)
-
+    for i, nome in enumerate(opcoes_menu):
+        if st.button(nome, key=f"menu_lateral_{i}"):
+            selecionar_pagina(nome)
     st.markdown("</div>", unsafe_allow_html=True)
 
 # Menu topo (mobile)
 st.markdown("<div class='menu-horizontal'>", unsafe_allow_html=True)
 st.markdown("<div class='menu-container'>", unsafe_allow_html=True)
-for nome in ["Início", "Produtos", "Custos Variáveis", "Custos Fixos", "Simulador", "Gráfico de Rentabilidade", "Relatório/Gráfico", "Salvar/Carregar"]:
-    if st.button(nome):
+for i, nome in enumerate(opcoes_menu):
+    if st.button(nome, key=f"menu_topo_{i}"):
         selecionar_pagina(nome)
 st.markdown("</div></div>", unsafe_allow_html=True)
 
+# Página atual
 pagina = st.session_state['pagina']
 
 if pagina == "Início":
