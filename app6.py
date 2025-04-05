@@ -9,28 +9,14 @@ import base64
 
 st.set_page_config(page_title="Simulador de Markup - Marcos Rita + IA", layout="wide")
 
-# CSS para modo escuro com tons de azul escuro e azul claro e controle de menus
+# CSS personalizado com dark mode e menus adaptativos
 st.markdown("""
     <style>
     body {
-        background-color: #1B262C;
-        color: #BBE1FA;
+        background-color: #0b1d36;
+        color: white;
     }
-    .stApp {
-        background-color: #1B262C;
-        color: #BBE1FA;
-    }
-    h1, h2, h3, h4, h5, h6, p, label, .stMarkdown, .css-1d391kg, .css-qrbaxs, .css-10trblm, .st-b8, .st-c9 {
-        color: #BBE1FA !important;
-    }
-    .menu-container {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        margin-bottom: 2rem;
-        flex-wrap: wrap;
-    }
-    .menu-container button {
+    .menu-lateral button, .menu-container button {
         background-color: #0f4c75;
         color: white;
         border: none;
@@ -40,18 +26,28 @@ st.markdown("""
         cursor: pointer;
         transition: 0.3s;
     }
-    .menu-container button:hover {
+    .menu-lateral button:hover, .menu-container button:hover {
         background-color: #3282b8;
     }
-    /* Ocultar menu lateral sempre */
-    [data-testid="stSidebar"] {
-        display: none !important;
+    @media (min-width: 768px) {
+        .menu-horizontal { display: none !important; }
+    }
+    @media (max-width: 767px) {
+        .menu-lateral { display: none !important; }
+    }
+    .menu-container {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
     }
     </style>
 """, unsafe_allow_html=True)
 
 st.title("Simulador de Markup e Rentabilidade")
 
+# Inicialização do estado da sessão
 if 'pagina' not in st.session_state:
     st.session_state['pagina'] = "Início"
 if 'produtos' not in st.session_state:
@@ -69,13 +65,22 @@ opcoes_menu = [
     "Simulador", "Gráfico de Rentabilidade", "Relatório/Gráfico", "Salvar/Carregar"
 ]
 
-# Menu único horizontal responsivo
-st.markdown("<div class='menu-container'>", unsafe_allow_html=True)
-for i, nome in enumerate(opcoes_menu):
-    if st.button(nome, key=f"menu_{i}"):
-        selecionar_pagina(nome)
+# Menu lateral (desktop)
+st.markdown("<div class='menu-lateral'>", unsafe_allow_html=True)
+with st.sidebar:
+    for i, nome in enumerate(opcoes_menu):
+        if st.button(nome, key=f"menu_lateral_{i}"):
+            selecionar_pagina(nome)
 st.markdown("</div>", unsafe_allow_html=True)
 
+# Menu topo (mobile)
+st.markdown("<div class='menu-horizontal'><div class='menu-container'>", unsafe_allow_html=True)
+for i, nome in enumerate(opcoes_menu):
+    if st.button(nome, key=f"menu_topo_{i}"):
+        selecionar_pagina(nome)
+st.markdown("</div></div>", unsafe_allow_html=True)
+
+# Navegação de páginas
 pagina = st.session_state['pagina']
 
 if pagina == "Início":
@@ -84,14 +89,14 @@ if pagina == "Início":
 elif pagina == "Simulador":
     st.subheader("Simulador de Markup e Rentabilidade")
     if not st.session_state['produtos'] or not st.session_state['custos_variaveis'] or not st.session_state['custos_fixos']:
-        st.info("📌 Cadastre os produtos, custos variáveis e custos fixos para simular o markup e a rentabilidade.")
+        st.info("\U0001F4CC Cadastre os produtos, custos variáveis e custos fixos para simular o markup e a rentabilidade.")
     else:
         st.success("Tudo pronto para simular! Explore os gráficos no menu acima ou lateral.")
 
 elif pagina == "Gráfico de Rentabilidade":
     st.subheader("Gráfico de Rentabilidade")
     if not st.session_state['produtos']:
-        st.info("📌 Cadastre produtos, custos variáveis e fixos antes de gerar os gráficos.")
+        st.info("\U0001F4CC Cadastre produtos, custos variáveis e fixos antes de gerar os gráficos.")
     else:
         st.success("Pronto para visualizar seus dados!")
 
@@ -157,11 +162,11 @@ elif pagina == "Relatório/Gráfico":
         fig2 = px.bar(df_produtos, x="Produto", y="Markup", text_auto=True)
         st.plotly_chart(fig2)
 
-        if st.button("📄 Gerar PDF"):
+        if st.button("\U0001F4C4 Gerar PDF"):
             caminho_pdf = gerar_pdf(df_produtos, df_cv, df_cf, lucro_total, markup_medio)
             with open(caminho_pdf, "rb") as f:
                 b64 = base64.b64encode(f.read()).decode()
-                href = f'<a href="data:application/octet-stream;base64,{b64}" download="relatorio_simulador.pdf">📥 Baixar PDF</a>'
+                href = f'<a href="data:application/octet-stream;base64,{b64}" download="relatorio_simulador.pdf">\U0001F4C5 Baixar PDF</a>'
                 st.markdown(href, unsafe_allow_html=True)
 
 elif pagina == "Salvar/Carregar":
